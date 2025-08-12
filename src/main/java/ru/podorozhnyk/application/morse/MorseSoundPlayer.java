@@ -3,6 +3,8 @@ package ru.podorozhnyk.application.morse;
 import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class MorseSoundPlayer {
     public static final int UNIT_MS = 100; // Базовая единица времени
@@ -17,6 +19,7 @@ public final class MorseSoundPlayer {
     private static boolean isPlaying;
     private static Thread thread;
     private static AudioInputStream audioStream;
+    private static final List<byte[]> audioChunks = new ArrayList<>();
 
     public static void playDot() throws LineUnavailableException, IOException {
         playBeep(DOT_MS);
@@ -35,6 +38,7 @@ public final class MorseSoundPlayer {
                 buffer.length
         );
 
+        audioChunks.add(buffer);
         currentClip = AudioSystem.getClip();
         currentClip.open(audioStream);
         currentClip.start();
@@ -88,10 +92,6 @@ public final class MorseSoundPlayer {
 
     public static boolean isPlaying() {
         return isPlaying;
-    }
-
-    public static AudioInputStream getStream() {
-        return audioStream;
     }
 
     public static void stop() {

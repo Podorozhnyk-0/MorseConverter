@@ -3,9 +3,7 @@ package ru.podorozhnyk.application.ui;
 import ru.podorozhnyk.application.morse.*;
 
 import java.awt.event.ActionEvent;
-import java.util.AbstractList;
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -96,9 +94,6 @@ public class MainFrame extends JFrame {
             MorseSoundPlayer.stop();
             stopButton.setEnabled(false);
         });
-
-        //JButton b = new JButton("Test");
-
 
         JList<String> dictList = new JList<>();
 
