@@ -1,6 +1,8 @@
 package ru.podorozhnyk.application.morse;
 
 
+import ru.podorozhnyk.application.exceptions.IllegalMorseSequenceException;
+
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -92,7 +94,7 @@ public class MorseConverter {
      * @return from morse-converted text
      * @throws IllegalArgumentException if <code>text</code> is null or empty string
      */
-    public String convertFromMorse(String morseText) {
+    public String convertFromMorse(String morseText) throws IllegalMorseSequenceException {
         Utils.requireNonBlank(morseText, "\"morseText\" is null or empty.");
         if (!MorseUtils.isPatternValid(morseText))
             throw new IllegalArgumentException("\"morseText\" represents invalid morse code. Morse can contain only '.', '-' and spaces.");
@@ -102,6 +104,8 @@ public class MorseConverter {
             for (String word : morseLine.split(" {2}")) {
                 String[] morseLetters = word.split(" ");
                 for (String letter : morseLetters) {
+                    if (!containsMorseCode(letter))
+                        throw new IllegalMorseSequenceException(String.format("\"%s\" is non-existent morse sequence.", letter));
                     for (MorseDictionary dictionary : currentDictionaryOrder) {
                         if (!dictionary.containsMorseCode(letter)) continue;
                         builder.append(dictionary.getTranslationCode(letter));
@@ -112,19 +116,6 @@ public class MorseConverter {
             }
             builder.append("\n");
         }
-
-        /*for (String word : morseText.split(" {2}")) {
-            String[] morseLetters = word.split(" ");
-            for (String letter : morseLetters) {
-                for (MorseDictionary dictionary : currentDictionaryOrder) {
-                    if (!dictionary.containsMorseCode(letter)) continue;
-                    builder.append(dictionary.getTranslationCode(letter));
-                    break;
-                }
-            }
-            builder.append(" ");
-        }*/
         return builder.toString();
     }
-
 }

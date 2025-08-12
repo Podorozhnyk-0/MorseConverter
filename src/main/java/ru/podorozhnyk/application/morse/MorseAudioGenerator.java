@@ -105,6 +105,8 @@ public final class MorseAudioGenerator {
     }
 
     public static void saveToFile(String filename) throws IOException {
+        if (isAudioStreamEmpty()) throw new IllegalStateException("Audio stream is empty. Cannot write to file.");
+
         AudioFormat format = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE_BITS, CHANNELS, SIGNED, BIG_ENDIAN);
         InputStream byteArrayInputStream = new ByteArrayInputStream(outputStream.toByteArray());
         AudioInputStream audioInputStream = new AudioInputStream(byteArrayInputStream, format, outputStream.toByteArray().length / 2);
@@ -112,5 +114,9 @@ public final class MorseAudioGenerator {
         File fileOut = new File(filename);
         AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, fileOut);
         audioInputStream.close();
+    }
+
+    public static boolean isAudioStreamEmpty() {
+        return outputStream.size() == 0;
     }
 }

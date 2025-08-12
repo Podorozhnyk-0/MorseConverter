@@ -1,15 +1,23 @@
 package ru.podorozhnyk.application.ui;
 
+import ru.podorozhnyk.application.AuthorInfo;
+import ru.podorozhnyk.application.exceptions.IllegalMorseSequenceException;
 import ru.podorozhnyk.application.morse.*;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 
 import static javax.swing.ScrollPaneConstants.*;
@@ -25,8 +33,11 @@ public class MainFrame extends JFrame {
     private final Container contentPane;
 
     private JTextArea inputArea, outputArea;
-    private JButton translateButton, playButton, stopButton;
+    private JButton translateButton, playButton,
+            stopButton, saveAudioButton, saveTextButton;
     private String translateMode;
+    private String lastTranslatedText;
+    private int translationsCounter;
 
     public MainFrame(String title, int width, int height) {
         setTitle(title);
@@ -41,6 +52,7 @@ public class MainFrame extends JFrame {
         UIManager.put("List.font", FONT);
         setupUi();
         setVisible(true);
+        translationsCounter = 1;
         translateMode = "TM";
     }
 
@@ -72,13 +84,21 @@ public class MainFrame extends JFrame {
                         break;
                     outputArea.setText(CONVERTER.convertToMorse(inputArea.getText()));
                     MorseAudioGenerator.generateMorseCode(outputArea.getText());
+                    lastTranslatedText = inputArea.getText();
                 }
                 case "MT" -> {
-                    outputArea.setText(CONVERTER.convertFromMorse(inputArea.getText()));
+                    try {
+                        outputArea.setText(CONVERTER.convertFromMorse(inputArea.getText()));
+                    } catch (IllegalMorseSequenceException e) {
+                        JOptionPane.showMessageDialog(null, e.getMessage(),
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                     MorseAudioGenerator.generateMorseCode(inputArea.getText());
+                    lastTranslatedText = outputArea.getText();
                 }
             }
-
+            saveAudioButton.setEnabled(true);
+            saveTextButton.setEnabled(true);
         });
         playButton = new JButton("Play");
         playButton.setEnabled(false);
@@ -93,7 +113,6 @@ public class MainFrame extends JFrame {
         stopButton.setEnabled(false);
         stopButton.setPreferredSize(new Dimension(eastSize.width / 4 + 18, eastSize.height / 16));
         stopButton.addActionListener(actionEvent -> {
-            //MorseSoundPlayer.stop();
             MorseAudioGenerator.stop();
             stopButton.setEnabled(false);
         });
@@ -127,6 +146,7 @@ public class MainFrame extends JFrame {
                 CONVERTER.setCurrentDictionaryOrder(copyList.toArray(String[]::new));
             }
         });
+
         JButton downButton = new JButton("↓");
         downButton.addActionListener(actionEvent -> {
             if (dictList.getSelectedIndex() < dictList.getModel().getSize() - 1) {
@@ -144,15 +164,72 @@ public class MainFrame extends JFrame {
             }
         });
 
+        saveAudioButton = new JButton("Save Audio");
+        saveAudioButton.setPreferredSize(new Dimension(eastSize.width / 2 + 40, eastSize.height / 16));
+        saveAudioButton.setEnabled(false);
+        saveAudioButton.addActionListener(actionEvent -> {
+            if (!MorseAudioGenerator.isAudioStreamEmpty()) {
+                try {
+                    DateFormat dateFormat = new SimpleDateFormat("dd-MM-yy_HH:mm:ss");
+                    String text = lastTranslatedText.replace(' ', '_').replace('\n', '_');
+                    text = text.substring(0, Math.min(text.length(), 16));
+
+                    File dir = new File("./audio");
+                    dir.mkdir();
+                    MorseAudioGenerator.saveToFile(Paths.get(dir.getPath(),
+                            String.format("%s_%s.mp3", dateFormat.format(new Date()), text)).toString());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        saveTextButton = new JButton("Save Text");
+        saveTextButton.setPreferredSize(new Dimension(eastSize.width / 2 + 40, eastSize.height / 16));
+        saveTextButton.setEnabled(false);
+        saveTextButton.addActionListener(actionEvent -> {
+            DateFormat dateFormat = new SimpleDateFormat("dd-MM-yy_HH:mm:ss");
+            String fileName = String.format("Translation_No%d_%s", translationsCounter++, dateFormat.format(new Date()));
+            File dir = new File("./translations");
+            dir.mkdir();
+            File file = new File(Paths.get(dir.getPath(), fileName).toUri());
+            try (FileWriter writer = new FileWriter(file)) {
+               writer.write(String.format("Translation from %s to %s.\n", translateMode.equals("TM")? "text" : "morse",
+                       translateMode.equals("TM")? "morse" : "text"));
+               String morseText = translateMode.equals("TM")? outputArea.getText() : inputArea.getText();
+               String text = translateMode.equals("TM")? lastTranslatedText : outputArea.getText();
+               writer.write(String.format("Text: \"%s\"\nMorse: \"%s\"\n", text, morseText));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
         navigationPanel.add(upButton);
         navigationPanel.add(Box.createRigidArea(new Dimension(0, eastSize.height / 8 + 14)));
         navigationPanel.add(downButton);
 
+        JButton infoButton = new JButton("i");
+        infoButton.addActionListener(actionEvent -> {
+            JOptionPane.showMessageDialog(null, String.format("Author: %s\nLink: %s",
+                            AuthorInfo.AUTHOR_NAME, AuthorInfo.GITHUB_LINK),
+                        "Creator info", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        JPanel infoPanel = new JPanel();
+        infoPanel.setBackground(Color.decode(BACKGROUND_COLOR));
+        infoPanel.setPreferredSize(new Dimension(eastSize.width / 2 + 40, eastSize.height / 16));
+        infoPanel.add(Box.createRigidArea(new Dimension(eastSize.width / 2 - 13, 0)));
+        infoPanel.add(infoButton, BorderLayout.EAST);
+
         eastPanel.add(translateButton);
         eastPanel.add(playButton);
         eastPanel.add(stopButton);
+        eastPanel.add(saveAudioButton);
+        eastPanel.add(saveTextButton);
         eastPanel.add(listPane);
         eastPanel.add(navigationPanel);
+        eastPanel.add(Box.createRigidArea(new Dimension(10, eastSize.height / 4 - 10)));
+        eastPanel.add(infoPanel);
         return eastPanel;
     }
 
@@ -246,17 +323,26 @@ public class MainFrame extends JFrame {
         northPanel.setBackground(Color.decode(BACKGROUND_COLOR_NORTH));
         JButton translateModeButton = new JButton("Text -> Morse");
         translateModeButton.addActionListener(actionEvent -> {
-            translateButton.getActionListeners()[0]
-                    .actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
-            translateMode = (translateMode.equals("TM"))? "MT" : "TM";
+            if ((translateMode.equals("TM") && outputArea.getText().isEmpty() && inputArea.getText().isEmpty())
+                    || (translateMode.equals("MT") && inputArea.getText().isEmpty())) {
+                translateMode = (translateMode.equals("TM"))? "MT" : "TM";
+            }
+            else {
+                translateButton.getActionListeners()[0]
+                        .actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+                translateMode = (translateMode.equals("TM"))? "MT" : "TM";
 
-            String inputText = inputArea.getText();
-            String outputText = outputArea.getText();
-            inputArea.setText(outputText);
+                String inputText = inputArea.getText();
+                String outputText = outputArea.getText();
+                inputArea.setText(outputText);
 
-            outputArea.setText(translateMode.equals("TM")? inputText : CONVERTER.convertFromMorse(outputText));
-
-
+                try {
+                    outputArea.setText(translateMode.equals("TM")? inputText : CONVERTER.convertFromMorse(outputText));
+                } catch (IllegalMorseSequenceException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
             translateModeButton.setText(switch (translateMode) {
                 case "TM" -> "Text -> Morse";
                 case "MT" -> "Morse -> Text";
@@ -266,6 +352,4 @@ public class MainFrame extends JFrame {
         northPanel.add(translateModeButton);
         return northPanel;
     }
-
-
 }

@@ -109,7 +109,7 @@ public final class MorseUtils {
                 .addMapping("-..-", "X")
                 .addMapping("-.--", "Y")
                 .addMapping("--..", "Z")
-                .addMapping("---.", "Ö") //Начиная отсюда перевести в другой алфавит
+                .addMapping("---.", "Ö")
                 .addMapping("----", "Š")
                 .addMapping("--.--", "Ñ")
                 .addMapping("..-..", "É")

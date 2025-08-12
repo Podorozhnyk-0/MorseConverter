@@ -1,6 +1,5 @@
 package ru.podorozhnyk.application;
 
-import ru.podorozhnyk.application.morse.MorseAudioGenerator;
 import ru.podorozhnyk.application.morse.MorseConverter;
 import ru.podorozhnyk.application.ui.MainFrame;
 
@@ -16,6 +15,7 @@ import static ru.podorozhnyk.application.morse.MorseUtils.DefaultDictionaries.*;
 
 public class Main {
 
+
     public static void main(String[] args) throws LineUnavailableException, IOException, InterruptedException {
         //--gui (другие флаги игнорируются - запускается приложение), -t (text-to-morse), -m (morse-to-text), -s (sound)
         if (args.length > 0) {
@@ -24,12 +24,6 @@ public class Main {
         }
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         JFrame frame = new MainFrame("Morse Converter", screenSize.width / 2, screenSize.height / 2);
-
-        MorseConverter converter = new MorseConverter(LATIN, CYRILLIC, NUMBERS, PUNCTUATION);
-        AtomicInteger i = new AtomicInteger();
-        converter.getLoadedDictionaries().forEach(x -> {
-            System.out.println(i.getAndIncrement() + " " +  x.getName());
-        });
     }
 
 
