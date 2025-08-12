@@ -4,21 +4,19 @@ import javax.sound.sampled.*;
 import java.io.*;
 
 public final class MorseAudioGenerator {
-    private static final float SAMPLE_RATE = 8000f; // 8 кГц
+    private static final float SAMPLE_RATE = 8000f; // 8 kHz
     private static final int SAMPLE_SIZE_BITS = 16;
-    private static final int CHANNELS = 1; // моно
+    private static final int CHANNELS = 1; // mono channel
     private static final boolean SIGNED = true;
     private static final boolean BIG_ENDIAN = false;
 
-    // Параметры Морзе
-    private static final int UNIT_MS = 100; // длительность одного "точка" в миллисекундах
+    private static final int UNIT_MS = 100;
     private static final int DOT_DURATION = UNIT_MS;
     private static final int DASH_DURATION = 3 * UNIT_MS;
-    private static final int SYMBOL_GAP = UNIT_MS; // пауза между точками/тире
-    private static final int LETTER_GAP = 3 * UNIT_MS; // пауза между буквами
-    private static final int WORD_GAP = 7 * UNIT_MS; // пауза между словами
+    private static final int SYMBOL_GAP = UNIT_MS;
+    private static final int LETTER_GAP = 3 * UNIT_MS;
+    private static final int WORD_GAP = 7 * UNIT_MS;
 
-    // Частота сигнала (Гц)
     private static final int TONE_FREQUENCY = 800;
 
     private static Clip currentClip;
@@ -86,7 +84,7 @@ public final class MorseAudioGenerator {
 
     private static void addTone(int durationMs) throws IOException {
         int numSamples = (int) (durationMs * SAMPLE_RATE / 1000);
-        byte[] buffer = new byte[numSamples * 2]; // 16-битный звук
+        byte[] buffer = new byte[numSamples * 2];
 
         double anglePerSample = 2.0 * Math.PI * TONE_FREQUENCY / SAMPLE_RATE;
 
@@ -102,7 +100,7 @@ public final class MorseAudioGenerator {
 
     private static void addSilence(int durationMs) throws IOException {
         int numSamples = (int) (durationMs * SAMPLE_RATE / 1000);
-        byte[] buffer = new byte[numSamples * 2]; // тишина - нули
+        byte[] buffer = new byte[numSamples * 2];
         outputStream.write(buffer);
     }
 

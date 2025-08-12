@@ -1,7 +1,7 @@
 package ru.podorozhnyk.application;
 
+import ru.podorozhnyk.application.morse.MorseAudioGenerator;
 import ru.podorozhnyk.application.morse.MorseConverter;
-import ru.podorozhnyk.application.morse.MorseSoundPlayer;
 import ru.podorozhnyk.application.ui.MainFrame;
 
 import javax.sound.sampled.*;
@@ -30,17 +30,8 @@ public class Main {
         converter.getLoadedDictionaries().forEach(x -> {
             System.out.println(i.getAndIncrement() + " " +  x.getName());
         });
-
-        String test = "The quick brown fox jumps over the lazy dog";
-        System.out.println(test);
-        String convTest = converter.convertToMorse(test);
-        System.out.println(convTest);
-        System.out.println(converter.convertFromMorse(convTest));
-        converter.setCurrentDictionaryOrder("PUNCTUATION", "NUMBERS","CYRILLIC", "LATIN"  );
-
-        System.out.println(converter.convertFromMorse(convTest));
-        //MorseSoundPlayer.playMorseCode(convTest);
-
     }
+
+
 
 }

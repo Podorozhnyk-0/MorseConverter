@@ -71,8 +71,12 @@ public class MainFrame extends JFrame {
                     if (inputArea.getText().isBlank())
                         break;
                     outputArea.setText(CONVERTER.convertToMorse(inputArea.getText()));
+                    MorseAudioGenerator.generateMorseCode(outputArea.getText());
                 }
-                case "MT" -> outputArea.setText(CONVERTER.convertFromMorse(inputArea.getText()));
+                case "MT" -> {
+                    outputArea.setText(CONVERTER.convertFromMorse(inputArea.getText()));
+                    MorseAudioGenerator.generateMorseCode(inputArea.getText());
+                }
             }
 
         });
@@ -81,9 +85,7 @@ public class MainFrame extends JFrame {
         playButton.setPreferredSize(new Dimension(eastSize.width / 4 + 18, eastSize.height / 16));
 
         playButton.addActionListener(actionEvent -> {
-            String text = translateMode.equals("TM")?
-                    outputArea.getText() : CONVERTER.convertToMorse(outputArea.getText());
-            MorseSoundPlayer.playMorseCode(text);
+            MorseAudioGenerator.playMorse();
             stopButton.setEnabled(true);
         });
 
@@ -91,7 +93,8 @@ public class MainFrame extends JFrame {
         stopButton.setEnabled(false);
         stopButton.setPreferredSize(new Dimension(eastSize.width / 4 + 18, eastSize.height / 16));
         stopButton.addActionListener(actionEvent -> {
-            MorseSoundPlayer.stop();
+            //MorseSoundPlayer.stop();
+            MorseAudioGenerator.stop();
             stopButton.setEnabled(false);
         });
 
