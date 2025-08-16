@@ -5,13 +5,18 @@ import ru.podorozhnyk.application.exceptions.DuplicateException;
 import java.util.*;
 
 public class MorseDictionary {
-    private final String DICTIONARY_NAME;
+    private final String DICTIONARY_NAME, LETTER;
     private final Map<String, String> MORSE_TO_TEXT, TEXT_TO_MORSE;
 
-    private MorseDictionary(final String name, final Map<String, String> morseToText, final Map<String, String> textToMorse) {
+    private static final Set<MorseDictionary> ALL_DICTIONARIES = new HashSet<>();
+
+    private MorseDictionary(final String name, final String letter, final Map<String, String> morseToText, final Map<String, String> textToMorse) {
         DICTIONARY_NAME = name;
+        LETTER = letter;
         MORSE_TO_TEXT = morseToText;
         TEXT_TO_MORSE = textToMorse;
+
+        ALL_DICTIONARIES.add(this);
     }
 
     public boolean containsMorseCode(String morseCode) {
@@ -24,6 +29,14 @@ public class MorseDictionary {
 
     public String getName() {
         return DICTIONARY_NAME;
+    }
+
+    public String getLetter() {
+        return LETTER;
+    }
+
+    public static Set<MorseDictionary> getAllDictionaries() {
+        return ALL_DICTIONARIES;
     }
 
     /**
@@ -52,12 +65,13 @@ public class MorseDictionary {
     }
 
 
-    private static class IdsHolder {
+    private static final class IdsHolder {
         private final static Set<String> IDS = Collections.synchronizedSet(new HashSet<>());
+        private final static Set<String> LETTERS = Collections.synchronizedSet(new HashSet<>());
     }
 
     public static class Builder {
-        private final String DICTIONARY_NAME;
+        private final String DICTIONARY_NAME, LETTER;
         private final Map<String, String> MORSE_TO_TEXT, TEXT_TO_MORSE;
 
         /**
@@ -66,14 +80,18 @@ public class MorseDictionary {
          * @throws DuplicateException if there's already registered dictionary with same <code>name</code>
          * @throws IllegalArgumentException if <code>name</code> is null or empty
          */
-        public Builder(String name) {
+        public Builder(String name, String letter) {
             Utils.requireNonBlank(name, "\"name\" is null or empty.");
             if (IdsHolder.IDS.contains(name))
                 throw new DuplicateException(String.format("There's already registered dictionary with name \"%s\".", name));
+            if (IdsHolder.LETTERS.contains(letter))
+                throw new DuplicateException(String.format("There's already registered dictionary with letter \"%s\".", letter));
             DICTIONARY_NAME = name;
+            LETTER = letter;
             MORSE_TO_TEXT = new HashMap<>();
             TEXT_TO_MORSE = new HashMap<>();
             IdsHolder.IDS.add(DICTIONARY_NAME);
+            IdsHolder.LETTERS.add(LETTER);
         }
 
         /**
@@ -105,7 +123,7 @@ public class MorseDictionary {
         }
 
         public MorseDictionary build() {
-            return new MorseDictionary(DICTIONARY_NAME, MORSE_TO_TEXT, TEXT_TO_MORSE);
+            return new MorseDictionary(DICTIONARY_NAME, LETTER, MORSE_TO_TEXT, TEXT_TO_MORSE);
         }
     }
 }

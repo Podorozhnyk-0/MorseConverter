@@ -24,6 +24,10 @@ public final class MorseAudioGenerator {
     private static final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
     public static void playMorse() {
+        playMorse(false);
+    }
+
+    public static void playMorse(boolean shouldDrain) {
         AudioFormat format = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE_BITS, CHANNELS, SIGNED, BIG_ENDIAN);
         AudioInputStream audioStream = new AudioInputStream(
                 new ByteArrayInputStream(outputStream.toByteArray()),
@@ -34,6 +38,8 @@ public final class MorseAudioGenerator {
             currentClip = AudioSystem.getClip();
             currentClip.open(audioStream);
             currentClip.start();
+            if (shouldDrain)
+                currentClip.drain();
         } catch (LineUnavailableException | IOException e) {
             throw new RuntimeException(e);
         }
@@ -53,12 +59,8 @@ public final class MorseAudioGenerator {
                 for (String letter : word.split(" ")) {
                     for (char unit : letter.toCharArray()) {
                         switch (unit) {
-                            case '.':
-                                addDot();
-                                break;
-                            case '-':
-                                addDash();
-                                break;
+                            case '.' -> addDot();
+                            case '-' -> addDash();
                         }
                     }
                     addSilence(LETTER_GAP);

@@ -4,7 +4,6 @@ import ru.podorozhnyk.application.AuthorInfo;
 import ru.podorozhnyk.application.exceptions.IllegalMorseSequenceException;
 import ru.podorozhnyk.application.morse.*;
 
-import java.awt.event.ActionEvent;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -78,27 +77,7 @@ public class MainFrame extends JFrame {
         translateButton.setEnabled(false);
         translateButton.setPreferredSize(new Dimension(eastSize.width / 2 + 40, eastSize.height / 8));
         translateButton.addActionListener(actionEvent -> {
-            switch (translateMode) {
-                case "TM" -> {
-                    if (inputArea.getText().isBlank())
-                        break;
-                    outputArea.setText(CONVERTER.convertToMorse(inputArea.getText()));
-                    MorseAudioGenerator.generateMorseCode(outputArea.getText());
-                    lastTranslatedText = inputArea.getText();
-                }
-                case "MT" -> {
-                    try {
-                        outputArea.setText(CONVERTER.convertFromMorse(inputArea.getText()));
-                    } catch (IllegalMorseSequenceException e) {
-                        JOptionPane.showMessageDialog(null, e.getMessage(),
-                                "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                    MorseAudioGenerator.generateMorseCode(inputArea.getText());
-                    lastTranslatedText = outputArea.getText();
-                }
-            }
-            saveAudioButton.setEnabled(true);
-            saveTextButton.setEnabled(true);
+            translate();
         });
         playButton = new JButton("Play");
         playButton.setEnabled(false);
@@ -272,14 +251,15 @@ public class MainFrame extends JFrame {
             }
 
             @Override
-            public void removeUpdate(DocumentEvent documentEvent) {
+            public void removeUpdate(DocumentEvent event) {
                 checkEmptiness();
+                if (inputArea.getText().isBlank()) {
+                    outputArea.setText("");
+                }
             }
 
             @Override
-            public void changedUpdate(DocumentEvent documentEvent) {
-                checkEmptiness();
-            }
+            public void changedUpdate(DocumentEvent documentEvent) { checkEmptiness(); }
 
             private void checkEmptiness() {
                 translateButton.setEnabled(!inputArea.getText().isBlank());
@@ -324,12 +304,11 @@ public class MainFrame extends JFrame {
         JButton translateModeButton = new JButton("Text -> Morse");
         translateModeButton.addActionListener(actionEvent -> {
             if ((translateMode.equals("TM") && outputArea.getText().isEmpty() && inputArea.getText().isEmpty())
-                    || (translateMode.equals("MT") && inputArea.getText().isEmpty())) {
+                    || (translateMode.equals("MT") && inputArea.getText().isEmpty())
+                    || (inputArea.getText().isBlank() && outputArea.getText().isBlank())) {
                 translateMode = (translateMode.equals("TM"))? "MT" : "TM";
-            }
-            else {
-                translateButton.getActionListeners()[0]
-                        .actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+            } else {
+                translate();
                 translateMode = (translateMode.equals("TM"))? "MT" : "TM";
 
                 String inputText = inputArea.getText();
@@ -351,5 +330,31 @@ public class MainFrame extends JFrame {
         });
         northPanel.add(translateModeButton);
         return northPanel;
+    }
+
+    private void translate() {
+        switch (translateMode) {
+            case "TM" -> {
+                if (inputArea.getText().isBlank())
+                    break;
+                outputArea.setText(CONVERTER.convertToMorse(inputArea.getText()));
+                MorseAudioGenerator.generateMorseCode(outputArea.getText());
+                lastTranslatedText = inputArea.getText();
+            }
+            case "MT" -> {
+                if (inputArea.getText().isBlank())
+                    break;
+                try {
+                    outputArea.setText(CONVERTER.convertFromMorse(inputArea.getText()));
+                } catch (IllegalMorseSequenceException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                MorseAudioGenerator.generateMorseCode(inputArea.getText());
+                lastTranslatedText = outputArea.getText();
+            }
+        }
+        saveAudioButton.setEnabled(true);
+        saveTextButton.setEnabled(true);
     }
 }

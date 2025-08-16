@@ -82,7 +82,7 @@ public final class MorseUtils {
     }
 
     public static class DefaultDictionaries {
-        public static final MorseDictionary LATIN = new MorseDictionary.Builder("LATIN")
+        public static final MorseDictionary LATIN = new MorseDictionary.Builder("LATIN", "L")
                 .addMapping(".-", "A")
                 .addMapping("-...", "B")
                 .addMapping("-.-.", "C")
@@ -115,7 +115,7 @@ public final class MorseUtils {
                 .addMapping("..-..", "É")
                 .addMapping("..--", "Ü")
                 .addMapping(".-.-", "Ä").build();
-        public static final MorseDictionary CYRILLIC = new MorseDictionary.Builder("CYRILLIC")
+        public static final MorseDictionary CYRILLIC = new MorseDictionary.Builder("CYRILLIC", "C")
                 .addMapping(".-", "А")
                 .addMapping("-...", "Б")
                 .addMapping(".--", "В")
@@ -148,7 +148,7 @@ public final class MorseUtils {
                 .addMapping("..-..", "Э")
                 .addMapping("..--", "Ю")
                 .addMapping(".-.-", "Я").build();
-        public static final MorseDictionary NUMBERS = new MorseDictionary.Builder("NUMBERS")
+        public static final MorseDictionary NUMBERS = new MorseDictionary.Builder("NUMBERS", "N")
                 .addMapping("-----", "0")
                 .addMapping(".----", "1")
                 .addMapping("..---", "2")
@@ -159,7 +159,7 @@ public final class MorseUtils {
                 .addMapping("--...", "7")
                 .addMapping("---..", "8")
                 .addMapping("----.", "9").build();
-        public static final MorseDictionary PUNCTUATION = new MorseDictionary.Builder("PUNCTUATION")
+        public static final MorseDictionary PUNCTUATION = new MorseDictionary.Builder("PUNCTUATION", "P")
                 .addMapping(".-.-.-", ".")
                 .addMapping("--..--", ",")
                 .addMapping("---...", ":")

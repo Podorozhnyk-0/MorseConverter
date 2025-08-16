@@ -5,6 +5,7 @@ import ru.podorozhnyk.application.exceptions.IllegalMorseSequenceException;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 public class MorseConverter {
@@ -57,13 +58,15 @@ public class MorseConverter {
 
     /**
      * @return morse-converted text
-     * @throws IllegalArgumentException if <code>text</code> is null or empty string
+     * @throws IllegalArgumentException if <code>text</code> is null or empty string.
+     * @throws NoSuchElementException if <code>text</code> contains character that not registered in converter's dictionaries.
      */
     public String convertToMorse(String text) {
         Utils.requireNonBlank(text, "\"text\" is null or empty.");
         text = text.toUpperCase().replace('Ё', 'Е'); //трактуется одним кодом
 
         StringBuilder builder = new StringBuilder();
+
         for (int i = 0; i < text.length(); ++i) {
             if (text.charAt(i) == '\n') {
                 builder.append('\n');
@@ -71,12 +74,16 @@ public class MorseConverter {
             }
             if (text.charAt(i) == ' ') continue;
 
+            boolean containsInDictionaries = false;
             for (MorseDictionary dictionary : currentDictionaryOrder) {
                 if (!dictionary.containsTranslationCode(String.valueOf(text.charAt(i)))) continue;
 
+                containsInDictionaries = true;
                 String morseCode = dictionary.getMorseCode(String.valueOf(text.charAt(i)));
                 builder.append(morseCode);
             }
+            if (!containsInDictionaries)
+                throw new NoSuchElementException(String.format("Couldn't find character \"%s\" in dictionaries.", text.charAt(i)));
             if (i < text.length() - 1) {
                 if (text.charAt(i + 1) == ' ') {
                     builder.append("  ");
@@ -92,7 +99,8 @@ public class MorseConverter {
     /**
      * @param morseText represents valid morse code
      * @return from morse-converted text
-     * @throws IllegalArgumentException if <code>text</code> is null or empty string
+     * @throws IllegalArgumentException if <code>text</code> is null or empty string.
+     * @throws IllegalMorseSequenceException if <code>text</code> has invalid morse sequences.
      */
     public String convertFromMorse(String morseText) throws IllegalMorseSequenceException {
         Utils.requireNonBlank(morseText, "\"morseText\" is null or empty.");
@@ -104,7 +112,7 @@ public class MorseConverter {
             for (String word : morseLine.split(" {2}")) {
                 String[] morseLetters = word.split(" ");
                 for (String letter : morseLetters) {
-                    if (!containsMorseCode(letter))
+                    if (!containsMorseCode(letter) && !letter.isBlank())
                         throw new IllegalMorseSequenceException(String.format("\"%s\" is non-existent morse sequence.", letter));
                     for (MorseDictionary dictionary : currentDictionaryOrder) {
                         if (!dictionary.containsMorseCode(letter)) continue;
