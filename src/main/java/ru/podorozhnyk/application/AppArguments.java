@@ -4,9 +4,6 @@ import ru.podorozhnyk.application.exceptions.ModeAlreadySetException;
 import ru.podorozhnyk.application.morse.MorseDictionary;
 
 import java.util.*;
-import java.util.stream.Stream;
-
-import static ru.podorozhnyk.application.morse.MorseUtils.DefaultDictionaries.*;
 
 public class AppArguments {
     private boolean shouldPlayAudio;
